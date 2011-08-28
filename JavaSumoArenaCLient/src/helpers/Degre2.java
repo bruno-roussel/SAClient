@@ -11,7 +11,7 @@ public class Degre2 {
 
 	public float[] resolve() {
 		float delta = (b * b) - 4 * a * c;
-		System.out.println("Degre2 > resolve delta=" + delta);
+		//System.out.println("Degre2 > resolve delta=" + delta);
 		if (delta < 0)
 			return null;
 		float[] ret = new float[2];
