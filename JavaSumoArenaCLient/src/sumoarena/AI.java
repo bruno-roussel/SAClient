@@ -1,8 +1,9 @@
 package sumoarena;
 
+import helpers.Algebra;
+
 import java.util.Date;
 
-import helpers.Algebra;
 import valueobjects.AccelerationVector;
 import valueobjects.Line;
 import valueobjects.PlayingInfo;
@@ -10,17 +11,19 @@ import valueobjects.Point;
 import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
 import valueobjects.Vector;
+import ai.Action;
+import ai.SeekAction;
 import ai.ZAction;
 
 public class AI {
 
 	private int dx;
 	private int dy;
-	private ZAction zAction;
+	private Action action;
 	private RoundStartInfo roundInfo;
 	
 	public AI(RoundStartInfo roundInfo){
-		zAction = new ZAction(roundInfo);
+		action = new SeekAction(roundInfo, new Point(120, 120));
 		this.roundInfo = roundInfo;
 	}
 		
@@ -28,17 +31,17 @@ public class AI {
 		Date now = new Date();
 		long startTime = now.getTime();
 		Sphere sphere = playingInfo.getSpheres()[roundInfo.myIndex];
-		AccelerationVector ac = zAction.execute(sphere, playingInfo);
+		AccelerationVector ac = action.execute(sphere, playingInfo);
 		Sphere nextPosition = getNextPosition(roundInfo, sphere, ac, playingInfo);
 		if (!nextPosition.inArena){
 			System.out.println("WARNING NEXT POSITION IS OUT OF ARENA  => MAX BRAKE!");
 			ac = getMaxBrake(roundInfo, sphere);
 		}
-//		return makeSureMaxSpeedVariation(roundInfo, ac);
+		ac = makeSureMaxSpeedVariation(roundInfo, ac);
 		now = new Date();
 		long endTime = now.getTime();
 		long duration = endTime - startTime;
-		System.out.println("Thinking duration =" + duration + "ms");
+		System.out.println("Thinking duration =" + duration + "ms, AccelerationVector = " + ac);
 		return ac;
 	}
 
@@ -92,8 +95,8 @@ public class AI {
 		if (!isOverMaxSpeed(roundInfo, ac))
 			return ac;
 		float dV = Algebra.getEuclidDistance(ac.getdVx(), ac.getdVy());
-		int dVx = Math.round(ac.getdVx() * roundInfo.maxSpeedVariation / dV);
-		int dVy = Math.round(ac.getdVy() * roundInfo.maxSpeedVariation / dV);
+		int dVx = (int)Math.floor(ac.getdVx() * roundInfo.maxSpeedVariation / dV);
+		int dVy = (int)Math.floor(ac.getdVy() * roundInfo.maxSpeedVariation / dV);
 		return new AccelerationVector(dVx, dVy);		
 	}
 

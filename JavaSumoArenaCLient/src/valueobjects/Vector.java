@@ -9,6 +9,9 @@ public class Vector {
 		this.dx = dx;
 		this.dy = dy;
 	}
-
+	
+	public String toString(){
+		return "(" + dx + ", " + dy + ")";
+	}
 	
 }

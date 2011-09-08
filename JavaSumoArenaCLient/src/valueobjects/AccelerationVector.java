@@ -11,7 +11,11 @@ public class AccelerationVector {
 		this.dVx = dVx;
 		this.dVy = dVy;
 	}
-	
+
+	public AccelerationVector(Vector v) {
+		this.dVx = (int)Math.floor(v.dx);
+		this.dVy = (int)Math.floor(v.dy);
+	}
 	/**
 	 * The modification to apply on the horizontal component of the velocity vector
 	 */
@@ -36,5 +40,9 @@ public class AccelerationVector {
 
 	public void setdVy(int dVy) {
 		this.dVy = dVy;
+	}
+	
+	public String toString(){
+		return "(" + dVx + ", " + dVy + ")";
 	}
 }

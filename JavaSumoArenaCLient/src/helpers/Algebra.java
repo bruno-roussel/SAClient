@@ -109,5 +109,24 @@ public class Algebra {
 		int dVy = Math.round(dy * maxSpeedVariation / v);
 		return new AccelerationVector(dVx, dVy);
 	}
+	
+	public static Vector normalize(Vector a){
+		float length = getEuclidDistance(a.dx, a.dy);
+		if (length==0)
+			return new Vector(0, 0);
+		return new Vector(a.dx/length, a.dy/length);
+	} 
+	
+	public static Vector multiply(Vector a, float length){
+		return new Vector(a.dx * length, a.dy * length);
+	}
+
+	public static Vector sub(Vector a, Vector b) {
+		return new Vector(a.dx - b.dx, a.dy - b.dy);
+	} 
+
+	public static Vector add(Vector a, Vector b) {
+		return new Vector(a.dx + b.dx, a.dy + b.dy);
+	} 
 
 }

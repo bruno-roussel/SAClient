@@ -69,4 +69,13 @@ public class Sphere
 		clone.inArena = inArena;	
 		return clone;
 	}
+	
+	public Point getPosition(){
+		return new Point(x,y);		
+	}
+	
+	public Vector getVelocity(){
+		return new Vector(vx, vy);
+	}
+	
 }
