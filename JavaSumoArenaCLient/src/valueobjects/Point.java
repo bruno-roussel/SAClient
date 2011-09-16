@@ -13,6 +13,10 @@ public class Point {
 	public String toString(){
 		return "[" + x + ", " + y + "]";
 	}
+	
+	public boolean equals(Point p){
+		return x==p.x && y==p.y;
+	}
 
 	
 }

@@ -12,8 +12,9 @@ import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
 import valueobjects.Vector;
 import ai.Action;
+import ai.ArrivalAction;
+import ai.CrossAction;
 import ai.SeekAction;
-import ai.ZAction;
 
 public class AI {
 
@@ -23,7 +24,12 @@ public class AI {
 	private RoundStartInfo roundInfo;
 	
 	public AI(RoundStartInfo roundInfo){
-		action = new SeekAction(roundInfo, new Point(120, 120));
+		int maxRandom = 200;
+		int x = (int) Math.round(Math.random() * maxRandom - maxRandom/2);
+		int y = (int) Math.round(Math.random() * maxRandom - maxRandom/2);
+		action = new SeekAction(roundInfo, new Point(50,50));
+		action = new CrossAction(roundInfo);
+		action = new ArrivalAction(roundInfo, new Point(0,0));
 		this.roundInfo = roundInfo;
 	}
 		
@@ -37,7 +43,7 @@ public class AI {
 			System.out.println("WARNING NEXT POSITION IS OUT OF ARENA  => MAX BRAKE!");
 			ac = getMaxBrake(roundInfo, sphere);
 		}
-		ac = makeSureMaxSpeedVariation(roundInfo, ac);
+		ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
 		now = new Date();
 		long endTime = now.getTime();
 		long duration = endTime - startTime;
@@ -45,17 +51,6 @@ public class AI {
 		return ac;
 	}
 
-	public static  boolean isOverMaxSpeed(RoundStartInfo roundInfo, AccelerationVector ac) {
-		return isOverEuclid(ac.getdVx(), ac.getdVy(), roundInfo.maxSpeedVariation);
-	}
-
-	public static  boolean isInArena(Sphere sphere, PlayingInfo playingInfo) {
-		return !isOverEuclid(sphere.x, sphere.y, playingInfo.getArenaRadius());
-	}
-	
-	public static  boolean isOverEuclid(int x, int y, int dist){
-		return (x*x+y*y>dist*dist);
-	}
 
 	public static  Sphere getNextPosition(RoundStartInfo roundInfo, Sphere sphere, AccelerationVector ac, PlayingInfo playingInfo){
 		Sphere next = sphere.clone();
@@ -63,20 +58,20 @@ public class AI {
 		next.y = sphere.y + sphere.vy + ac.getdVy();
 		next.vx = sphere.vx + ac.getdVx();
 		next.vy = sphere.vy + ac.getdVy();
-		next.inArena = isInArena(next, playingInfo);
+		next.inArena = Algebra.isInArena(next, playingInfo);
 		System.out.println("next :" + next.toString());
 		return next;
 	}
 	
 	public static  AccelerationVector getMaxBrake(RoundStartInfo roundInfo, Sphere sphere) {
 		float v = Algebra.getEuclidDistance(sphere.vx, sphere.vy);
-		int dVx = - Math.round(sphere.vx * roundInfo.maxSpeedVariation / v);
-		int dVy = - Math.round(sphere.vy * roundInfo.maxSpeedVariation / v);
+		int dVx = - Algebra.round(sphere.vx * roundInfo.maxSpeedVariation / v);
+		int dVy = - Algebra.round(sphere.vy * roundInfo.maxSpeedVariation / v);
 		return new AccelerationVector(dVx, dVy);
 	}
 	
 	public static int getInertyRoundsToStop(RoundStartInfo roundInfo, Sphere sphere){
-		return (int)Math.round(Algebra.getEuclidDistance(sphere.vx, sphere.vy) / roundInfo.maxSpeedVariation);
+		return (int)Algebra.round(Algebra.getEuclidDistance(sphere.vx, sphere.vy) / roundInfo.maxSpeedVariation);
 	}
 
 	public static float getInertyDistToStop(RoundStartInfo roundInfo, Sphere sphere, AccelerationVector ac){
@@ -91,15 +86,6 @@ public class AI {
 		return dist;
 	}
 	
-	public static AccelerationVector makeSureMaxSpeedVariation(RoundStartInfo roundInfo, AccelerationVector ac) {
-		if (!isOverMaxSpeed(roundInfo, ac))
-			return ac;
-		float dV = Algebra.getEuclidDistance(ac.getdVx(), ac.getdVy());
-		int dVx = (int)Math.floor(ac.getdVx() * roundInfo.maxSpeedVariation / dV);
-		int dVy = (int)Math.floor(ac.getdVy() * roundInfo.maxSpeedVariation / dV);
-		return new AccelerationVector(dVx, dVy);		
-	}
-
 	public static boolean isTooMuchInerty(RoundStartInfo roundInfo, Sphere sphere, AccelerationVector ac, PlayingInfo playingInfo){
 		Point p = new Point(sphere.x,sphere.y);
 		Vector v = new Vector(sphere.vx+ ac.getdVx(),sphere.vy + ac.getdVy());

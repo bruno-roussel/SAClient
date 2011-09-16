@@ -1,5 +1,7 @@
 package valueobjects;
 
+import helpers.Algebra;
+
 public class AccelerationVector {
 	
 	/**
@@ -13,8 +15,8 @@ public class AccelerationVector {
 	}
 
 	public AccelerationVector(Vector v) {
-		this.dVx = (int)Math.floor(v.dx);
-		this.dVy = (int)Math.floor(v.dy);
+		this.dVx = Algebra.round(v.dx);
+		this.dVy = Algebra.round(v.dy);
 	}
 	/**
 	 * The modification to apply on the horizontal component of the velocity vector

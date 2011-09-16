@@ -20,16 +20,16 @@ public class SeekAction extends Action {
 	
 	@Override
 	public AccelerationVector execute(Sphere sumo, PlayingInfo playingInfo){
-		System.out.println("SeekAction position " + sumo.getPosition());
-		System.out.println("SeekAction target " + target);
+		if (sumo.getPosition().equals(target) && sumo.getVelocity().dx == 0 && sumo.getVelocity().dy == 0){
+			System.out.println("SeekAction : YEAH, target " + target + " reached !!");
+			return new AccelerationVector(0,0);
+		}		
+		System.out.println("SeekAction : position " + sumo.getPosition());
+		System.out.println("SeekAction : velocity " + sumo.getVelocity());
 		Vector desiredVelocity = new Vector(target.x - sumo.x, target.y - sumo.y);
-		System.out.println("SeekAction desiredVelocity " + desiredVelocity);
-		desiredVelocity = Algebra.normalize(desiredVelocity);
-		Vector velocity = Algebra.normalize(sumo.getVelocity());
-		Vector steering = Algebra.sub(desiredVelocity, velocity);
-		System.out.println("SeekAction desiredVelocity " + desiredVelocity);
-		System.out.println("SeekAction velocity " + velocity);
-		System.out.println("SeekAction steering " + steering);
-		return new AccelerationVector(Algebra.multiply(steering, roundInfo.maxSpeedVariation));
+		System.out.println("SeekAction : desiredVelocity " + desiredVelocity);
+		Vector steering =Algebra.sub(desiredVelocity, sumo.getVelocity());
+		System.out.println("SeekAction : steering " + steering);
+		return new AccelerationVector(steering);
 	}
 }

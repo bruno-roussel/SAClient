@@ -5,7 +5,10 @@ import java.util.Map;
 
 import valueobjects.AccelerationVector;
 import valueobjects.Line;
+import valueobjects.PlayingInfo;
 import valueobjects.Point;
+import valueobjects.RoundStartInfo;
+import valueobjects.Sphere;
 import valueobjects.Vector;
 
 public class Algebra {
@@ -105,8 +108,8 @@ public class Algebra {
 	public static AccelerationVector computeNormalizedAccelerationVector(
 			float dx, float dy, int maxSpeedVariation) {
 		float v = Algebra.getEuclidDistance(dx, dy);
-		int dVx = Math.round(dx * maxSpeedVariation / v);
-		int dVy = Math.round(dy * maxSpeedVariation / v);
+		int dVx = round(dx * maxSpeedVariation / v);
+		int dVy = round(dy * maxSpeedVariation / v);
 		return new AccelerationVector(dVx, dVy);
 	}
 	
@@ -128,5 +131,41 @@ public class Algebra {
 	public static Vector add(Vector a, Vector b) {
 		return new Vector(a.dx + b.dx, a.dy + b.dy);
 	} 
+	
+	public static int round(float a){
+		if (a>0)
+			return (int)Math.floor(a);
+		else
+			return (int)Math.ceil(a);		
+	}
+
+	public static float getEuclidDistance(Vector v) {
+		return getEuclidDistance(v.dx, v.dy);
+	} 
+	
+	public static AccelerationVector makeSureMaxSpeedVariation(RoundStartInfo roundInfo, AccelerationVector ac) {
+		if (!isOverMaxSpeed(roundInfo, ac))
+			return ac;
+		float dV = Algebra.getEuclidDistance(ac.getdVx(), ac.getdVy());
+		int dVx = Algebra.round(ac.getdVx() * roundInfo.maxSpeedVariation / dV);
+		int dVy = Algebra.round(ac.getdVy() * roundInfo.maxSpeedVariation / dV);
+		return new AccelerationVector(dVx, dVy);		
+	}
+	public static  boolean isOverMaxSpeed(RoundStartInfo roundInfo, AccelerationVector ac) {
+		return isOverEuclid(ac.getdVx(), ac.getdVy(), roundInfo.maxSpeedVariation);
+	}
+	
+	public static  boolean isInArena(Sphere sphere, PlayingInfo playingInfo) {
+		return !isOverEuclid(sphere.x, sphere.y, playingInfo.getArenaRadius());
+	}
+	
+	public static  boolean isOverEuclid(int x, int y, int dist){
+		return (x*x+y*y>dist*dist);
+	}
+
+
+
+
+
 
 }
