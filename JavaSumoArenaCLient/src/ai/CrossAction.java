@@ -40,19 +40,19 @@ public class CrossAction extends Action {
 				state = State.GO_TARGET;
 				return execute(sumo, playingInfo);
 			}
-			return (new SeekAction(roundInfo, center)).execute(sumo, playingInfo);
+			return (new ArrivalAction(roundInfo, center)).execute(sumo, playingInfo);
 		}else{
 			if (isNearTarget(sumo, target)){
 				state = State.GO_CENTER;
 				return execute(sumo, playingInfo);
 			}				
-			return (new SeekAction(roundInfo, target)).execute(sumo, playingInfo);			
+			return (new ArrivalAction(roundInfo, target)).execute(sumo, playingInfo);			
 		}
 	}
 
 	private int getNextTarget() {
-		int current = currentTarget++;
-		if (current>targets.length)
+		int current = currentTarget + 1;
+		if (current>=targets.length)
 			return 0;
 		return current;
 	}

@@ -14,6 +14,7 @@ import valueobjects.Vector;
 import ai.Action;
 import ai.ArrivalAction;
 import ai.CrossAction;
+import ai.CrossActionEnemy;
 import ai.SeekAction;
 
 public class AI {
@@ -29,7 +30,9 @@ public class AI {
 		int y = (int) Math.round(Math.random() * maxRandom - maxRandom/2);
 		action = new SeekAction(roundInfo, new Point(50,50));
 		action = new CrossAction(roundInfo);
-		action = new ArrivalAction(roundInfo, new Point(0,0));
+		int enemy = roundInfo.playerCount - roundInfo.myIndex - 1;
+		action = new CrossActionEnemy(roundInfo, enemy);
+		//action = new ArrivalAction(roundInfo, new Point(x,y));
 		this.roundInfo = roundInfo;
 	}
 		
@@ -38,6 +41,10 @@ public class AI {
 		long startTime = now.getTime();
 		Sphere sphere = playingInfo.getSpheres()[roundInfo.myIndex];
 		AccelerationVector ac = action.execute(sphere, playingInfo);
+		if (isTooMuchInerty(roundInfo, sphere, ac, playingInfo)){
+			System.out.println("WARNING TOO MUCH INERTY, OUT OF ARENA  => MAX BRAKE!");
+			ac = getMaxBrake(roundInfo, sphere);	
+		}		
 		Sphere nextPosition = getNextPosition(roundInfo, sphere, ac, playingInfo);
 		if (!nextPosition.inArena){
 			System.out.println("WARNING NEXT POSITION IS OUT OF ARENA  => MAX BRAKE!");
