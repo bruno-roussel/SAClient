@@ -29,10 +29,10 @@ public class CrossAction extends Action {
 
 	public AccelerationVector execute(Sphere sumo, PlayingInfo playingInfo){
 		targets = new Point[4];
-		targets[0] = new Point(playingInfo.getArenaRadius(), 0);
-		targets[1] = new Point(-playingInfo.getArenaRadius(), 0);
-		targets[2] = new Point(0, playingInfo.getArenaRadius());
-		targets[3] = new Point(0, - playingInfo.getArenaRadius());
+		targets[0] = new Point(playingInfo.getArenaRadius()- roundInfo.sphereRadius, 0);
+		targets[1] = new Point(-playingInfo.getArenaRadius()+ roundInfo.sphereRadius, 0);
+		targets[2] = new Point(0, playingInfo.getArenaRadius()- roundInfo.sphereRadius);
+		targets[3] = new Point(0, - playingInfo.getArenaRadius()+ roundInfo.sphereRadius);
 		target = targets[currentTarget];
 		if (state == State.GO_CENTER){
 			if (isNearTarget(sumo, center)){

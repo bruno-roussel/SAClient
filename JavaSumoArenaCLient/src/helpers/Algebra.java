@@ -53,8 +53,10 @@ public class Algebra {
 		Point[] inter = new Point[2];
 		inter[0] = new Point(b, (float) Math.sqrt(circleRadius * circleRadius
 				- b * b));
+		System.out.println("Algebra.getIntersectionsWithVerticalLine inter[0]=" + inter[0]);
 		inter[1] = new Point(b, -(float) Math.sqrt(circleRadius * circleRadius
 				- b * b));
+		System.out.println("Algebra.getIntersectionsWithVerticalLine inter[1]=" + inter[1]);
 		return inter;
 	}
 

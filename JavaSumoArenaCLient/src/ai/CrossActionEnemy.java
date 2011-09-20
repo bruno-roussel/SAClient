@@ -57,16 +57,32 @@ public class CrossActionEnemy extends Action {
 		System.out.println("CrossActionEnemy.getNextTarget points " + points);
 		Point inter = Algebra.getNextIntersection(center, direction, points);
 		System.out.println("CrossActionEnemy.getNextTarget inter " + inter);
+		boolean insideArena = inter.x * inter.x + inter.y * inter.y < playingInfo.getArenaRadius() * playingInfo.getArenaRadius();
+		System.out.println("CrossActionEnemy.getNextTarget insideArena " + insideArena);
+		if (!insideArena){
+			inter.y = (float) Math.sqrt(playingInfo.getArenaRadius() * playingInfo.getArenaRadius() - inter.x * inter.x);
+		}
+		if (inter.x<0)
+			inter.x = inter.x + roundInfo.sphereRadius;
+		if (inter.x>0)
+			inter.x = inter.x - roundInfo.sphereRadius;
+		if (inter.y<0)
+			inter.y = inter.y + roundInfo.sphereRadius;
+		if (inter.y>0)
+			inter.y = inter.y - roundInfo.sphereRadius;
 		return inter;
 	}
 
 	private boolean isNearTarget(Sphere sumo, Point target) {
-		boolean isSlow = sumo.vx <= 5 && sumo.vy <= 5;
+		System.out.println("isNearTarget [BEGIN] sumo " + sumo + " from target " + target);
+		boolean isSlow = sumo.vx <= 5 && sumo.vy <= 5 && sumo.vx >= -5 && sumo.vy >= -5;
 		float dx = sumo.x - target.x;
 		float dy = sumo.y - target.y;
 		boolean isDx = dx >= -5 && dx <= 5;
 		boolean isDy = dy >= -5 && dy <= 5;
-		return isSlow && isDx && isDy;
+		boolean res = isSlow && isDx && isDy;
+		System.out.println("isNearTarget [END] result=" + res);
+		return res;
 	}
 
 }

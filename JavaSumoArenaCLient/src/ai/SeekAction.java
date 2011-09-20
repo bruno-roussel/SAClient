@@ -24,7 +24,7 @@ public class SeekAction extends Action {
 			System.out.println("SeekAction : YEAH, target " + target + " reached !!");
 			return new AccelerationVector(0,0);
 		}		
-		System.out.println("SeekAction : position " + sumo.getPosition());
+		//System.out.println("SeekAction : position " + sumo.getPosition());
 		System.out.println("SeekAction : velocity " + sumo.getVelocity());
 		Vector desiredVelocity = new Vector(target.x - sumo.x, target.y - sumo.y);
 		System.out.println("SeekAction : desiredVelocity " + desiredVelocity);

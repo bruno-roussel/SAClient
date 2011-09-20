@@ -2,6 +2,7 @@ package helpers;
 
 import java.util.ArrayList;
 
+import valueobjects.PlayingInfo;
 import valueobjects.Point;
 import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
@@ -18,15 +19,76 @@ public class DefensiveHelper {
 			return false;
 	}
 	
-	public static ArrayList<Sphere> getStrikers(Sphere[] spheres, int myIndex, Point position, RoundStartInfo roundInfo){
+	public static ArrayList<Sphere> getStrikers(Sphere[] spheres, int myIndex, RoundStartInfo roundInfo){
+		//System.out.println("getStrikers [BEGIN]");
+		Sphere me = spheres[myIndex];
 		ArrayList<Sphere> strikers = new ArrayList<Sphere>();
 		for (int i=0; i<spheres.length;i++){
 			if (i==myIndex)
 				continue;
-			if (isReachable(position, spheres[i], roundInfo))
+			//System.out.println("getStrikers [" + i + "]");
+			if (isInRect(me, spheres[i], roundInfo))
 				strikers.add(spheres[i]);
 		}
+		//System.out.println("getStrikers [END]");
 		return strikers;
+	}
+	
+
+	public static boolean isInRect(float ax, float ay, float bx, float by, float dx, float dy, float x, float y){
+		//System.out.println("isInRect (" + x + "," + y + ") is in (" + ax + ", " + ay + ") (" + bx + ", " + by + ") (" + dx + ", " + dy + ").");
+		float bax=bx-ax;
+		float bay=by-ay;
+		float dax=dx-ax;
+		float day=dy-ay;
+	
+		if ((x-ax)*bax+(y-ay)*bay<0.0) return false;
+		if ((x-bx)*bax+(y-by)*bay>0.0) return false;
+		if ((x-ax)*dax+(y-ay)*day<0.0) return false;
+		if ((x-dx)*dax+(y-dy)*day>0.0) return false;
+	
+		return true;
+	}
+	
+	public static boolean isInRect(Sphere me, Sphere enemy, RoundStartInfo roundInfo){
+		int securityDist = roundInfo.maxSpeedVariation + roundInfo.sphereRadius;
+		//System.out.println("isInRect securityDist=" + securityDist);
+		float velocity = Algebra.getEuclidDistance(enemy.getVelocity());
+		if (velocity == 0)
+			return isInCircle(me, enemy, roundInfo);
+		//System.out.println("isInRect velocity=" + velocity);
+		float securityX = enemy.vy / velocity * securityDist;  
+		float securityY = enemy.vx / velocity * securityDist;  
+		//System.out.println("isInRect security=(" + securityX + ", " + securityY + ")");
+		float ax = enemy.x - securityX;
+		float ay = enemy.y + securityY;
+		//System.out.println("isInRect a=(" + ax + ", " + ay + ")");
+
+		float bx = enemy.x + securityX;
+		float by = enemy.y - securityY;
+		//System.out.println("isInRect b=(" + bx + ", " + by + ")");
+		
+		float mx = enemy.x + enemy.vx + securityY; 
+		float my = enemy.y + enemy.vy + securityX;
+		//System.out.println("isInRect m=(" + mx + ", " + my + ")");
+		
+		float dx = mx - securityX;
+		float dy = my - securityY;
+		//System.out.println("isInRect d=(" + dx + ", " + dy + ")");
+		
+		boolean isInRect = isInRect(ax,ay,bx,by,dx,dy,me.x,me.y);
+		System.out.println("isInRect " + isInRect);
+		return isInRect;
+	}
+
+	private static boolean isInCircle(Sphere me, Sphere enemy,
+			RoundStartInfo roundInfo) {
+		float radius = roundInfo.maxSpeedVariation + roundInfo.sphereRadius;
+		float x = me.x - enemy.x;
+		float y = me.y - enemy.y;
+		boolean isInCircle = x * x + y * y < radius * radius;
+		System.out.println("isInCircle " + isInCircle);
+		return isInCircle;
 	}
 	
 	

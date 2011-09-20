@@ -73,7 +73,11 @@ public class Sphere
 	public Point getPosition(){
 		return new Point(x,y);		
 	}
-	
+
+	public Point getNextPosition(){
+		return new Point(x + vx,y + vy);		
+	}
+
 	public Vector getVelocity(){
 		return new Vector(vx, vy);
 	}
