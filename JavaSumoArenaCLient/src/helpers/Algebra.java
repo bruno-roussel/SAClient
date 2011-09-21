@@ -48,7 +48,7 @@ public class Algebra {
 
 	private static Point[] getIntersectionsWithVerticalLine(int circleRadius,
 			Line line) {
-		System.out.println("Algebra.getIntersectionsWithVerticalLine");
+		System.out.println("Algebra.getIntersectionsWithVerticalLine line=" + line);
 		float b = line.getB();
 		Point[] inter = new Point[2];
 		inter[0] = new Point(b, (float) Math.sqrt(circleRadius * circleRadius

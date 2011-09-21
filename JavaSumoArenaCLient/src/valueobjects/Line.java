@@ -19,7 +19,13 @@ public class Line {
 	}
 
 	public float getB(){
+		if (v.dx == 0)
+			return p.y;
 		return p.y - getA() * p.x;
 	}
+	
+	
+	public String toString(){
+		return "p=[" + p.x + ", " + p.y + "],v=[" + v.dx + ", " + v.dy + "]";	}
 	
 }

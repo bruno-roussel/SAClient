@@ -1,17 +1,38 @@
 package helpers;
 
+import java.util.ArrayList;
+
 import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
 
 public class Collision {
 
+	public static Sphere[] handleCollisionsNextRound(Sphere[] aliveSpheres,
+			RoundStartInfo roundStartInfo) {
+		ArrayList<Sphere> spheres = new ArrayList<Sphere>();
+		Sphere[] spheresClones = new Sphere[aliveSpheres.length];
+		for (int i=0;i<aliveSpheres.length;i++){
+			spheresClones[i] = aliveSpheres[i].clone();
+		}
+		int SLICES = 50;
+		for (int i=0; i<SLICES; i++){
+			for (int j=0;i<spheresClones.length;i++){
+				spheresClones[j].x = aliveSpheres[j].x + aliveSpheres[j].vx / SLICES;
+				spheresClones[j].y = aliveSpheres[j].y + aliveSpheres[j].vy / SLICES;
+			}	
+			handleCollisions(aliveSpheres, roundStartInfo);
+		}
+		return spheresClones;
+	}
+	
+	
 	/**
 	 * detects the collisions between spheres, then handle them
 	 * 
 	 * @param aliveSpheres
 	 *            the list of spheres in the arena
 	 */
-	public void handleCollisions(Sphere[] aliveSpheres,
+	public static void handleCollisions(Sphere[] aliveSpheres,
 			RoundStartInfo roundStartInfo) {
 		int sphereNumber = aliveSpheres.length;
 		for (int i = 0; i < sphereNumber; i++) {
@@ -46,11 +67,15 @@ public class Collision {
 	 * @param distance
 	 *            the distance in pixels between the center of the spheres
 	 */
-	private void repulse(Sphere sphere, Sphere otherSphere, int distX,
+	private static void repulse(Sphere sphere, Sphere otherSphere, int distX,
 			int distY, int distance, RoundStartInfo roundInfo) {
 		// define unitary direction vector
-		int normalX = distX / distance;
-		int normalY = distY / distance;
+		int normalX = distX;
+		int normalY = distY;
+		if (distance!=0){
+			normalX = distX / distance;
+			normalY = distY / distance;
+		}
 		// the collision point
 		int middlepointX = (sphere.x + otherSphere.x) / 2;
 		int middlepointY = (sphere.y + otherSphere.y) / 2;

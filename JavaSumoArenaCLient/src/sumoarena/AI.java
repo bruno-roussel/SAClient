@@ -18,6 +18,7 @@ import ai.ArrivalAction;
 import ai.CrossAction;
 import ai.CrossActionEnemy;
 import ai.FleeAction;
+import ai.MegaAction;
 import ai.SeekAction;
 
 public class AI {
@@ -26,6 +27,7 @@ public class AI {
 	private int dy;
 	private Action action;
 	private RoundStartInfo roundInfo;
+	public static Vector nextVelocity;
 	
 	public AI(RoundStartInfo roundInfo){
 		int maxRandom = 200;
@@ -34,7 +36,7 @@ public class AI {
 		action = new SeekAction(roundInfo, new Point(50,50));
 		action = new CrossAction(roundInfo);
 		int enemy = roundInfo.playerCount - roundInfo.myIndex - 1;
-		action = new CrossActionEnemy(roundInfo,enemy);
+		action = new MegaAction(roundInfo,enemy);
 //		action = new CrossAction(roundInfo);
 //		action = new ArrivalAction(roundInfo, new Point(x,y));
 		this.roundInfo = roundInfo;
@@ -45,19 +47,8 @@ public class AI {
 		long startTime = now.getTime();
 		Sphere sphere = playingInfo.getSpheres()[roundInfo.myIndex];
 		System.out.println("current position= " + sphere.getPosition() + ", current velocitty= " + sphere.getVelocity());
-		AccelerationVector ac;
+		AccelerationVector ac =action.execute(sphere, playingInfo);
 		
-		ArrayList<Sphere> strikers = DefensiveHelper.getStrikers(playingInfo.getSpheres(), roundInfo.myIndex, roundInfo);
-		if (strikers!=null && strikers.size()>0){
-			System.out.println("DEFENSE");
-			Sphere striker = strikers.get(0);
-			ac = (new FleeAction(roundInfo,striker.getNextPosition() )).execute(sphere, playingInfo);			
-		}
-		else{
-			System.out.println("ATTACK");
-			ac = action.execute(sphere, playingInfo);
-		}
-				
 		if (isTooMuchInerty(roundInfo, sphere, ac, playingInfo)){
 			System.out.println("WARNING TOO MUCH INERTY, OUT OF ARENA  => MAX BRAKE!");
 			ac = (new SeekAction(roundInfo,new Point(0,0) )).execute(sphere, playingInfo);
@@ -72,7 +63,7 @@ public class AI {
 		long endTime = now.getTime();
 		long duration = endTime - startTime;
 		Vector nextPos = new Vector(sphere.x + sphere.vx + ac.getdVx(), sphere.y + sphere.vy + ac.getdVy());		
-		Vector nextVelocity = new Vector(sphere.vx + ac.getdVx(), sphere.vy + ac.getdVy());		
+		nextVelocity = new Vector(sphere.vx + ac.getdVx(), sphere.vy + ac.getdVy());		
 		System.out.println("Thinking duration =" + duration + "ms, AccelerationVector = " + ac + ", Next position should be = " + nextPos + ", Next Velocitty should be = " + nextVelocity);
 		return ac;
 	}

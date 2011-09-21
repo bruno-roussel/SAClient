@@ -6,6 +6,7 @@ import valueobjects.PlayingInfo;
 import valueobjects.Point;
 import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
+import valueobjects.Vector;
 
 public class DefensiveHelper {
 
@@ -51,37 +52,43 @@ public class DefensiveHelper {
 	}
 	
 	public static boolean isInRect(Sphere me, Sphere enemy, RoundStartInfo roundInfo){
+		return isInRect(me.getPosition(), enemy, roundInfo);
+	}
+
+	public static boolean isInRect(Point me, Sphere enemy, RoundStartInfo roundInfo){
 		int securityDist = roundInfo.maxSpeedVariation + roundInfo.sphereRadius;
-		//System.out.println("isInRect securityDist=" + securityDist);
+		System.out.println("isInRect securityDist=" + securityDist);
 		float velocity = Algebra.getEuclidDistance(enemy.getVelocity());
 		if (velocity == 0)
 			return isInCircle(me, enemy, roundInfo);
-		//System.out.println("isInRect velocity=" + velocity);
+		
+		System.out.println("isInRect enemy position=" + enemy.getPosition());		
+		System.out.println("isInRect velocity=" + velocity);
 		float securityX = enemy.vy / velocity * securityDist;  
 		float securityY = enemy.vx / velocity * securityDist;  
-		//System.out.println("isInRect security=(" + securityX + ", " + securityY + ")");
-		float ax = enemy.x - securityX;
-		float ay = enemy.y + securityY;
-		//System.out.println("isInRect a=(" + ax + ", " + ay + ")");
+		System.out.println("isInRect security=(" + securityX + ", " + securityY + ")");
+		float ax = enemy.x + securityX;
+		float ay = enemy.y - securityY;
+		System.out.println("isInRect a=(" + ax + ", " + ay + ")");
 
-		float bx = enemy.x + securityX;
-		float by = enemy.y - securityY;
-		//System.out.println("isInRect b=(" + bx + ", " + by + ")");
+		float bx = enemy.x - securityX;
+		float by = enemy.y + securityY;
+		System.out.println("isInRect b=(" + bx + ", " + by + ")");
 		
 		float mx = enemy.x + enemy.vx + securityY; 
 		float my = enemy.y + enemy.vy + securityX;
-		//System.out.println("isInRect m=(" + mx + ", " + my + ")");
+		System.out.println("isInRect m=(" + mx + ", " + my + ")");
 		
-		float dx = mx - securityX;
+		float dx = mx + securityX;
 		float dy = my - securityY;
-		//System.out.println("isInRect d=(" + dx + ", " + dy + ")");
+		System.out.println("isInRect d=(" + dx + ", " + dy + ")");
 		
 		boolean isInRect = isInRect(ax,ay,bx,by,dx,dy,me.x,me.y);
 		System.out.println("isInRect " + isInRect);
 		return isInRect;
 	}
 
-	private static boolean isInCircle(Sphere me, Sphere enemy,
+	private static boolean isInCircle(Point me, Sphere enemy,
 			RoundStartInfo roundInfo) {
 		float radius = roundInfo.maxSpeedVariation + roundInfo.sphereRadius;
 		float x = me.x - enemy.x;
@@ -91,6 +98,28 @@ public class DefensiveHelper {
 		return isInCircle;
 	}
 	
+	public static boolean compare(Vector a, Vector b){
+		int MAX = 2;
+		float dx = a.dx - b.dx;
+		float dy = a.dy - b.dy;
+		boolean isDx = dx >= -MAX && dx <= MAX;
+		boolean isDy = dy >= -MAX && dy <= MAX;
+		boolean res = isDx && isDy;
+		return res;	
+	}
 	
+	public static float getScore(Sphere sphere, PlayingInfo playingInfo){
+		return playingInfo.getArenaRadius() - Algebra.getEuclidDistance(sphere.x, sphere.y);	
+	}
+	
+	public static float MIN_DANGEROUS_SCORE = 20;
+	
+	public static boolean isDangerousAttack(Sphere me, Point enemy, PlayingInfo playingInfo, RoundStartInfo roundInfo){
+		float myScore = getScore(me, playingInfo);
+		boolean isEnemyReachable = isInRect(enemy, me, roundInfo);
+		if (myScore<MIN_DANGEROUS_SCORE && !isEnemyReachable)
+			return true;
+		return false;
+	}
 	
 }
