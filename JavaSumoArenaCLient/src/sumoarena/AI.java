@@ -6,6 +6,8 @@ import helpers.DefensiveHelper;
 import java.util.ArrayList;
 import java.util.Date;
 
+import draw.GUIHelper;
+
 import valueobjects.AccelerationVector;
 import valueobjects.Line;
 import valueobjects.PlayingInfo;
@@ -43,6 +45,7 @@ public class AI {
 	}
 		
 	public AccelerationVector getAccelerationVector(PlayingInfo playingInfo) {
+		GUIHelper.drawArena(playingInfo, roundInfo);
 		Date now = new Date();
 		long startTime = now.getTime();
 		Sphere sphere = playingInfo.getSpheres()[roundInfo.myIndex];

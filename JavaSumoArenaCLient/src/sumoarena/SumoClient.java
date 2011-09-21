@@ -5,6 +5,8 @@ package sumoarena;
 
 import org.json.simple.JSONObject;
 
+import draw.GUIHelper;
+
 import ml.options.OptionSet;
 import ml.options.Options;
 import ml.options.Options.Multiplicity;
@@ -38,6 +40,7 @@ public class SumoClient {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		GUIHelper.show();
 		readOptions(args);
 		boolean connected = false;
 		GameClient gameClient;
