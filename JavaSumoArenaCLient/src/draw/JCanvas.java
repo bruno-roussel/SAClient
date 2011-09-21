@@ -15,8 +15,8 @@ public class JCanvas extends JPanel {
 	public void paint(Graphics g) {
 		if (!draw)
 			return;
-		for (Iterator iter = drawables.iterator(); iter.hasNext();) {
-			IDrawable d = (IDrawable) iter.next();
+		for (int i =0; i < drawables.size(); i++) {
+			IDrawable d = (IDrawable) drawables.get(i);
 			d.draw(g);	
 		}
 	}

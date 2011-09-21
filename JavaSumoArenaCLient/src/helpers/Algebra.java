@@ -49,24 +49,23 @@ public class Algebra {
 		// inter[0].x + ", " + inter[0].y + " )");
 		// System.out.println("Algebra.getIntersections : inter1 = ( " +
 		// inter[1].x + ", " + inter[1].y + " )");
-		IDrawable interD = new CirclePlainDrawable(Color.GREEN,new Point(GUIHelper.SHIFT + inter[0].x, GUIHelper.SHIFT + inter[0].y), 10, 1F);
-		GUIHelper.jc.addDrawable(interD);
-
-		
+		IDrawable interLineD = new LineDrawable(Color.GREEN,new Point(GUIHelper.SHIFT + inter[0].x, GUIHelper.SHIFT + inter[0].y),new Point(GUIHelper.SHIFT + inter[1].x, GUIHelper.SHIFT + inter[1].y), 1F);
+		GUIHelper.jc.addDrawable(interLineD);
+	
 		return inter;
 	}
 
 	private static Point[] getIntersectionsWithVerticalLine(int circleRadius,
 			Line line) {
-		System.out.println("Algebra.getIntersectionsWithVerticalLine line=" + line);
+		//System.out.println("Algebra.getIntersectionsWithVerticalLine line=" + line);
 		float b = line.getB();
 		Point[] inter = new Point[2];
 		inter[0] = new Point(b, (float) Math.sqrt(circleRadius * circleRadius
 				- b * b));
-		System.out.println("Algebra.getIntersectionsWithVerticalLine inter[0]=" + inter[0]);
+		//System.out.println("Algebra.getIntersectionsWithVerticalLine inter[0]=" + inter[0]);
 		inter[1] = new Point(b, -(float) Math.sqrt(circleRadius * circleRadius
 				- b * b));
-		System.out.println("Algebra.getIntersectionsWithVerticalLine inter[1]=" + inter[1]);
+		//System.out.println("Algebra.getIntersectionsWithVerticalLine inter[1]=" + inter[1]);
 		return inter;
 	}
 
@@ -74,9 +73,10 @@ public class Algebra {
 			Point[] points) {
 		for (int i = 0; i < points.length; i++) {
 			if (isPointIntersected(from, vector, points[i])) {
-				System.out
-						.println("Algebra.getNextIntersection : intersection = ( "
-								+ points[i].x + ", " + points[i].y + " )");
+				//System.out.println("Algebra.getNextIntersection : intersection = ( "
+					//			+ points[i].x + ", " + points[i].y + " )");
+				IDrawable interD = new CirclePlainDrawable(Color.GREEN,new Point(GUIHelper.SHIFT + points[i].x, GUIHelper.SHIFT + points[i].y), 5, 1F);
+				GUIHelper.jc.addDrawable(interD);				
 				return points[i];
 			}
 		}
@@ -175,6 +175,11 @@ public class Algebra {
 		return (x*x+y*y>dist*dist);
 	}
 
+	public static float dot(Vector a , Vector b){
+		return a.dx*b.dx + a.dy*b.dy;
+	}
+	
+	
 
 
 

@@ -1,6 +1,11 @@
 package ai;
 
+import java.awt.Color;
 import java.util.ArrayList;
+
+import draw.CirclePlainDrawable;
+import draw.GUIHelper;
+import draw.IDrawable;
 
 import helpers.Algebra;
 import helpers.Collision;
@@ -24,7 +29,7 @@ public class MegaAction extends Action {
 	
 	private int enemyIndex;
 
-	private Point target;
+	public Point target;
 	
 	private Point center = new Point(0,0);
 	
@@ -32,9 +37,8 @@ public class MegaAction extends Action {
 	
 	private int MAX_GO_TO_TARGET = 100;
 
-	public MegaAction(RoundStartInfo roundInfo, int enemyIndex){
+	public MegaAction(RoundStartInfo roundInfo){
 		this.roundInfo = roundInfo;
-		this.enemyIndex = enemyIndex;
 		state = State.GO_CENTER;
 	}
 
@@ -49,14 +53,15 @@ public class MegaAction extends Action {
 			Sphere[] nextSpheres = Collision.handleCollisionsNextRound(playingInfo.getSpheres(), roundInfo);
 			float myNextScore = DefensiveHelper.getScore(nextSpheres[roundInfo.myIndex], playingInfo);
 			float strikerNextScore = DefensiveHelper.getScore(nextSpheres[striker.index], playingInfo);
-			if (myNextScore > strikerNextScore){
+			if (myNextScore > strikerNextScore || isNearTarget(striker, center,15) || Algebra.getEuclidDistance(striker.getVelocity())<3){
 				// ATTACK
 				System.out.println("REPLY ATTACK !!!! myScore : " + myNextScore + " hisScore : " + strikerNextScore);
 				return (new SeekAction(roundInfo,striker.getNextPosition() )).execute(sumo, playingInfo);			
 			}
 			// FLEE	
 			System.out.println("FLEE FROM ATTACK.... :(");
-			return (new FleeAction(roundInfo,striker.getNextPosition() )).execute(sumo, playingInfo);			
+			return (new SeekAction(roundInfo,new Point(0,0) )).execute(sumo, playingInfo);			
+			//return (new FleeAction(roundInfo,striker.getNextPosition() )).execute(sumo, playingInfo);			
 		}
 		else{
 			System.out.println("ATTACK");
@@ -65,35 +70,55 @@ public class MegaAction extends Action {
 			}
 			
 			if (state == State.GO_CENTER){
-				if (isNearTarget(sumo, center,15)){
+				center = DefensiveHelper.getColdPoint(playingInfo.getSpheres(), roundInfo.myIndex, playingInfo, roundInfo);
+				goTargetCpt++;
+				if (isNearTarget(sumo, center,15) || goTargetCpt >= MAX_GO_TO_TARGET){
+					goTargetCpt = 0;
 					state = State.GO_TARGET;
 					return execute(sumo, playingInfo);
 				}
+				IDrawable targetD = new CirclePlainDrawable(Color.GREEN,new Point(GUIHelper.SHIFT +center.x, GUIHelper.SHIFT + center.y), 8, 1F);
+				GUIHelper.jc.addDrawable(targetD);				
 				return (new ArrivalAction(roundInfo, center)).execute(sumo, playingInfo);
 			}else{
-				target = getNextTarget(sumo, playingInfo);
+				Sphere targetAsSphere = DefensiveHelper.getTarget(playingInfo.getSpheres(), roundInfo.myIndex, playingInfo, roundInfo);
+				if (targetAsSphere==null && isNearTarget(sumo, center,15))
+					targetAsSphere = DefensiveHelper.getTargetAnyway(playingInfo.getSpheres(), roundInfo.myIndex, playingInfo, roundInfo);
+				if (targetAsSphere != null){
+					target = targetAsSphere.getNextPosition();
+				}else{
+					target = null;
+				}
+				if (target!=null){
+					IDrawable targetD = new CirclePlainDrawable(Color.GREEN,new Point(GUIHelper.SHIFT +target.x, GUIHelper.SHIFT + target.y), 8, 1F);
+					GUIHelper.jc.addDrawable(targetD);				
+				}
+				
 				goTargetCpt++;
 				boolean isDangerousAttack =false;
-				if (target!=null)
-					isDangerousAttack = DefensiveHelper.isDangerousAttack(sumo, target, playingInfo, roundInfo);
+				//if (target!=null)
+					//isDangerousAttack = DefensiveHelper.isDangerousAttack(sumo, target, playingInfo, roundInfo);
 				
-				if (isNearTarget(sumo, target,5) || goTargetCpt >= MAX_GO_TO_TARGET || target==null || isDangerousAttack){
+				if (goTargetCpt >= MAX_GO_TO_TARGET || target==null || isDangerousAttack || isNearTarget(sumo, target,5)){
 					goTargetCpt = 0;
 					state = State.GO_CENTER;
 					String reason="";
-					if (isNearTarget(sumo, target,5))
-						reason = "isNearTarget";
-					if (goTargetCpt >= MAX_GO_TO_TARGET)
-						reason = "maxGoToTarget";
 					if (target==null)
 						reason = "targetIsNull";
-					if (isDangerousAttack)
+					else if (isNearTarget(sumo, target,5))
+						reason = "isNearTarget";
+					else if (goTargetCpt >= MAX_GO_TO_TARGET)
+						reason = "maxGoToTarget";
+					else if (isDangerousAttack)
 						reason = "isDangerousAttack";
 					
 					System.out.println("GO BACK TO CENTER : REASON = " + reason + " " );
+					if (isNearTarget(sumo, center,15))
+						return new AccelerationVector(0, 0);
+					else
 					return execute(sumo, playingInfo);
 				}		
-				return (new ArrivalAction(roundInfo, target)).execute(sumo, playingInfo);			
+				return (new SeekAction(roundInfo, target)).execute(sumo, playingInfo);			
 			}
 		}
 		
@@ -128,8 +153,8 @@ public class MegaAction extends Action {
 		return inter;
 	}
 
-	private Point getNextTarget(Sphere sumo, PlayingInfo playingInfo) {
-		System.out.println("CrossActionEnemy.getNextTarget");
+	private Point getNextTarget3(Sphere sumo, PlayingInfo playingInfo) {
+		//System.out.println("CrossActionEnemy.getNextTarget");
 		Sphere enemy = playingInfo.getSpheres()[enemyIndex];
 		Point target = enemy.getNextPosition();
 		boolean insideArena = target.x * target.x + target.y * target.y < playingInfo.getArenaRadius() * playingInfo.getArenaRadius();
@@ -143,15 +168,16 @@ public class MegaAction extends Action {
 		return target;
 	}
 
+	
 	private boolean isNearTarget(Sphere sumo, Point target, int MAX) {
-		System.out.println("isNearTarget [BEGIN] sumo " + sumo + " from target " + target);
+		//System.out.println("isNearTarget [BEGIN] sumo " + sumo + " from target " + target);
 		boolean isSlow = sumo.vx <= MAX && sumo.vy <= MAX && sumo.vx >= -MAX && sumo.vy >= -MAX;
 		float dx = sumo.x - target.x;
 		float dy = sumo.y - target.y;
 		boolean isDx = dx >= -MAX && dx <= MAX;
 		boolean isDy = dy >= -MAX && dy <= MAX;
 		boolean res = isSlow && isDx && isDy;
-		System.out.println("isNearTarget [END] result=" + res);
+		//System.out.println("isNearTarget [END] result=" + res);
 		return res;
 	}
 	

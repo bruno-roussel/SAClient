@@ -41,19 +41,21 @@ public class GUIHelper {
 
 	public static void drawArena(PlayingInfo info, RoundStartInfo roundInfo){
 		jc.clear();
+		IDrawable rectD = new RectangleDrawable(Color.GRAY,new Point(0,0), new Dimension(700,700));
 		IDrawable circle2 = new CirclePlainDrawable(Color.WHITE,new Point(SHIFT, SHIFT), info.getArenaRadius(), 1F);
 		IDrawable circle = new CircleDrawable(Color.RED,new Point(SHIFT, SHIFT), info.getArenaRadius(), 10F);
+		jc.addDrawable(rectD);
 		jc.addDrawable(circle);
 		jc.addDrawable(circle2);
 		for (int i=0;i<info.getSpheres().length;i++){
 			Sphere sphere =  info.getSpheres()[i];
-			Color color = Color.BLUE;
+			Color color = Color.LIGHT_GRAY;
 			if (roundInfo.myIndex == i)
 				color = Color.RED;
 			IDrawable sphereD = new CirclePlainDrawable(color,new Point(SHIFT + sphere.x, SHIFT + sphere.y), roundInfo.sphereRadius, 1F);
-			IDrawable velD = new LineDrawable(Color.BLACK,new Point(SHIFT + sphere.x, SHIFT + sphere.y),new Point(SHIFT + sphere.x + sphere.vx, SHIFT + sphere.y + sphere.vy), 1F);
-			jc.addDrawable(velD);
+			IDrawable velD = new LineDrawable(Color.BLACK,new Point(SHIFT + sphere.x, SHIFT + sphere.y),new Point(SHIFT + sphere.x + sphere.vx, SHIFT + sphere.y + sphere.vy), 3F);
 			jc.addDrawable(sphereD);
+			jc.addDrawable(velD);
 			
 		}
 	}

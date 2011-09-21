@@ -1,12 +1,9 @@
 package sumoarena;
 
 import helpers.Algebra;
-import helpers.DefensiveHelper;
 
-import java.util.ArrayList;
+import java.awt.Color;
 import java.util.Date;
-
-import draw.GUIHelper;
 
 import valueobjects.AccelerationVector;
 import valueobjects.Line;
@@ -15,19 +12,17 @@ import valueobjects.Point;
 import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
 import valueobjects.Vector;
-import ai.Action;
-import ai.ArrivalAction;
-import ai.CrossAction;
-import ai.CrossActionEnemy;
-import ai.FleeAction;
 import ai.MegaAction;
 import ai.SeekAction;
+import draw.GUIHelper;
+import draw.IDrawable;
+import draw.LineDrawable;
 
 public class AI {
 
 	private int dx;
 	private int dy;
-	private Action action;
+	private MegaAction action;
 	private RoundStartInfo roundInfo;
 	public static Vector nextVelocity;
 	
@@ -35,10 +30,10 @@ public class AI {
 		int maxRandom = 200;
 		int x = (int) Math.round(Math.random() * maxRandom - maxRandom/2);
 		int y = (int) Math.round(Math.random() * maxRandom - maxRandom/2);
-		action = new SeekAction(roundInfo, new Point(50,50));
-		action = new CrossAction(roundInfo);
-		int enemy = roundInfo.playerCount - roundInfo.myIndex - 1;
-		action = new MegaAction(roundInfo,enemy);
+		//action = new SeekAction(roundInfo, new Point(50,50));
+		//action = new CrossAction(roundInfo);
+		//int enemy = roundInfo.playerCount - roundInfo.myIndex - 1;
+		action = new MegaAction(roundInfo);
 //		action = new CrossAction(roundInfo);
 //		action = new ArrivalAction(roundInfo, new Point(x,y));
 		this.roundInfo = roundInfo;
@@ -51,17 +46,34 @@ public class AI {
 		Sphere sphere = playingInfo.getSpheres()[roundInfo.myIndex];
 		System.out.println("current position= " + sphere.getPosition() + ", current velocitty= " + sphere.getVelocity());
 		AccelerationVector ac =action.execute(sphere, playingInfo);
-		
-		if (isTooMuchInerty(roundInfo, sphere, ac, playingInfo)){
-			System.out.println("WARNING TOO MUCH INERTY, OUT OF ARENA  => MAX BRAKE!");
-			ac = (new SeekAction(roundInfo,new Point(0,0) )).execute(sphere, playingInfo);
-		}	
-		Sphere nextPosition = getNextPosition(roundInfo, sphere, ac, playingInfo);
-		if (!nextPosition.inArena){
-			System.out.println("WARNING NEXT POSITION IS OUT OF ARENA  => MAX BRAKE!");
-			ac = (new SeekAction(roundInfo,new Point(0,0) )).execute(sphere, playingInfo);
-		}
 		ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+		
+		boolean dontBreak = false;
+		Sphere nextPosition = getNextPosition(roundInfo, sphere, ac, playingInfo);
+		if (isTooMuchInerty(roundInfo, sphere, ac, playingInfo) || !nextPosition.inArena){
+			if (action.target!=null){
+				Vector toTarget = new Vector(action.target.x - sphere.x, action.target.y - sphere.y);
+				Vector normToTarget = Algebra.normalize(toTarget);
+				Vector v = Algebra.normalize(sphere.getVelocity());
+				float dot = Algebra.dot(normToTarget, v);
+				float dist = Algebra.getEuclidDistance(toTarget);
+				if (dot > 0.7 && dist < 30)
+					dontBreak = true;
+			}
+			
+			if (dontBreak){
+				System.out.println("NEVER BRAKE !!! ATTACK TO DEATH !!!!");			
+			}
+			else{
+				System.out.println("WARNING TOO MUCH INERTY, OUT OF ARENA  => MAX BRAKE!");
+				ac = (new SeekAction(roundInfo,new Point(0,0) )).execute(sphere, playingInfo);
+			}
+		}	
+		ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+		IDrawable acD = new LineDrawable(Color.BLUE,new Point(GUIHelper.SHIFT + sphere.x + sphere.vx, GUIHelper.SHIFT + sphere.y + sphere.vy),new Point(GUIHelper.SHIFT + sphere.x + sphere.vx + ac.getdVx(), GUIHelper.SHIFT + sphere.y + sphere.vy + ac.getdVy()), 5F);
+		GUIHelper.jc.addDrawable(acD);
+		IDrawable vD = new LineDrawable(Color.BLACK,new Point(GUIHelper.SHIFT + sphere.x , GUIHelper.SHIFT + sphere.y ),new Point(GUIHelper.SHIFT + sphere.x + sphere.vx , GUIHelper.SHIFT + sphere.y + sphere.vy), 1F);
+		GUIHelper.jc.addDrawable(vD);
 		now = new Date();
 		long endTime = now.getTime();
 		long duration = endTime - startTime;
@@ -94,7 +106,7 @@ public class AI {
 		return (int)Algebra.round(Algebra.getEuclidDistance(sphere.vx, sphere.vy) / roundInfo.maxSpeedVariation);
 	}
 
-	public static float getInertyDistToStop(RoundStartInfo roundInfo, Sphere sphere, AccelerationVector ac){
+	public static float getInertyDistToStop(RoundStartInfo roundInfo, Sphere sphere, AccelerationVector ac){		
 		int vx = sphere.vx + ac.getdVx();
 		int vy = sphere.vy + ac.getdVy();
 		float currentSpeed = Algebra.getEuclidDistance(vx, vy);

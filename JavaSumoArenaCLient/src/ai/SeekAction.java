@@ -25,11 +25,11 @@ public class SeekAction extends Action {
 			return new AccelerationVector(0,0);
 		}		
 		//System.out.println("SeekAction : position " + sumo.getPosition());
-		System.out.println("SeekAction : velocity " + sumo.getVelocity());
+		//System.out.println("SeekAction : velocity " + sumo.getVelocity());
 		Vector desiredVelocity = new Vector(target.x - sumo.x, target.y - sumo.y);
-		System.out.println("SeekAction : desiredVelocity " + desiredVelocity);
+		//System.out.println("SeekAction : desiredVelocity " + desiredVelocity);
 		Vector steering =Algebra.sub(desiredVelocity, sumo.getVelocity());
-		System.out.println("SeekAction : steering " + steering);
+		//System.out.println("SeekAction : steering " + steering);
 		return new AccelerationVector(steering);
 	}
 }
