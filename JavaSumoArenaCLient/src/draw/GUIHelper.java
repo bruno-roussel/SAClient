@@ -17,7 +17,7 @@ public class GUIHelper {
 	
 	public static JCanvas jc = new JCanvas();
 	static JFrame frame = new JFrame("test");
-	static int SHIFT = 300;
+	public static int SHIFT = 300;
 	
 	public static void showOnFrame(JComponent component) {
 		WindowAdapter wa = new WindowAdapter() {
@@ -51,7 +51,10 @@ public class GUIHelper {
 			if (roundInfo.myIndex == i)
 				color = Color.RED;
 			IDrawable sphereD = new CirclePlainDrawable(color,new Point(SHIFT + sphere.x, SHIFT + sphere.y), roundInfo.sphereRadius, 1F);
+			IDrawable velD = new LineDrawable(Color.BLACK,new Point(SHIFT + sphere.x, SHIFT + sphere.y),new Point(SHIFT + sphere.x + sphere.vx, SHIFT + sphere.y + sphere.vy), 1F);
+			jc.addDrawable(velD);
 			jc.addDrawable(sphereD);
+			
 		}
 	}
 }

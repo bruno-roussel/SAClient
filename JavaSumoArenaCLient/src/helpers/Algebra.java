@@ -1,7 +1,13 @@
 package helpers;
 
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+
+import draw.CirclePlainDrawable;
+import draw.GUIHelper;
+import draw.IDrawable;
+import draw.LineDrawable;
 
 import valueobjects.AccelerationVector;
 import valueobjects.Line;
@@ -43,6 +49,10 @@ public class Algebra {
 		// inter[0].x + ", " + inter[0].y + " )");
 		// System.out.println("Algebra.getIntersections : inter1 = ( " +
 		// inter[1].x + ", " + inter[1].y + " )");
+		IDrawable interD = new CirclePlainDrawable(Color.GREEN,new Point(GUIHelper.SHIFT + inter[0].x, GUIHelper.SHIFT + inter[0].y), 10, 1F);
+		GUIHelper.jc.addDrawable(interD);
+
+		
 		return inter;
 	}
 
