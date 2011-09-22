@@ -22,28 +22,28 @@ public class ArrivalAction extends Action {
 	@Override
 	public AccelerationVector execute(Sphere sumo, PlayingInfo playingInfo){
 		if (sumo.getPosition().equals(target) && sumo.getVelocity().dx == 0 && sumo.getVelocity().dy == 0){
-			System.out.println("ArrivalAction : YEAH, target " + target + " reached !!");
+			//System.out.println("ArrivalAction : YEAH, target " + target + " reached !!");
 			return new AccelerationVector(0,0);
 		}					
-		System.out.println("ArrivalAction : position " + sumo.getPosition());
-		System.out.println("ArrivalAction : target " + target);
+		//System.out.println("ArrivalAction : position " + sumo.getPosition());
+		//System.out.println("ArrivalAction : target " + target);
 		int distanceToTarget = (int)Algebra.getEuclidDistance(target.x - sumo.x, target.y - sumo.y);
-		System.out.println("ArrivalAction : distance to target " + distanceToTarget);
+		//System.out.println("ArrivalAction : distance to target " + distanceToTarget);
 
 		AccelerationVector ac = (new SeekAction(roundInfo, target)).execute(sumo, playingInfo);
 		ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
-		System.out.println("ArrivalAction : seekAction ac " + ac);
+		//System.out.println("ArrivalAction : seekAction ac " + ac);
 		
 		Point nextPos = new Point(sumo.x + sumo.vx + ac.getdVx(), sumo.y + sumo.vy + ac.getdVy());
 		//Vector nextSpeed = new Vector(sumo.vx + ac.getdVx(),sumo.vy+ ac.getdVy());
 		int distance = (int)Algebra.getEuclidDistance(target.x - nextPos.x, target.y - nextPos.y);
-		System.out.println("ArrivalAction : distance to target next round " + distance);
+		//System.out.println("ArrivalAction : distance to target next round " + distance);
 		//System.out.println("ArrivalAction : speed next round  " + Algebra.getEuclidDistance(nextSpeed));
 		//int maxSpeed = getMaxSpeed(distance,roundInfo);
 		float minDistanceToStop = AI.getInertyDistToStop(roundInfo, sumo, ac);			
-		System.out.println("ArrivalAction : minDistanceToStop " + minDistanceToStop);
-		if (distance<minDistanceToStop){
-			System.out.println("ArrivalAction : WARNING OVER MAX SPEED ");
+		//System.out.println("ArrivalAction : minDistanceToStop " + minDistanceToStop);
+		if (distance + roundInfo.maxSpeedVariation<=minDistanceToStop){
+			//System.out.println("ArrivalAction : WARNING OVER MAX SPEED ");
 			Point nextPos2 = new Point(sumo.x + sumo.vx, sumo.y + sumo.vy);
 			Vector nextSpeed2 = sumo.getVelocity();
 
@@ -56,7 +56,7 @@ public class ArrivalAction extends Action {
 			ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
 			
 		}else{
-			System.out.println("ArrivalAction : SEEK TARGET ");
+			//System.out.println("ArrivalAction : SEEK TARGET ");
 		}
 		return ac;
 	}

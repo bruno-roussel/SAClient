@@ -1,15 +1,13 @@
 package ai;
 
+import helpers.Algebra;
+import helpers.Collision;
+import helpers.Constants;
+import helpers.DefensiveHelper;
+
 import java.awt.Color;
 import java.util.ArrayList;
 
-import draw.CirclePlainDrawable;
-import draw.GUIHelper;
-import draw.IDrawable;
-
-import helpers.Algebra;
-import helpers.Collision;
-import helpers.DefensiveHelper;
 import sumoarena.AI;
 import valueobjects.AccelerationVector;
 import valueobjects.Line;
@@ -18,6 +16,9 @@ import valueobjects.Point;
 import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
 import valueobjects.Vector;
+import draw.CirclePlainDrawable;
+import draw.GUIHelper;
+import draw.IDrawable;
 
 public class MegaAction extends Action {
 
@@ -35,7 +36,7 @@ public class MegaAction extends Action {
 	
 	private int goTargetCpt =0;
 	
-	private int MAX_GO_TO_TARGET = 100;
+
 
 	public MegaAction(RoundStartInfo roundInfo){
 		this.roundInfo = roundInfo;
@@ -43,28 +44,30 @@ public class MegaAction extends Action {
 	}
 
 	public AccelerationVector execute(Sphere sumo, PlayingInfo playingInfo){
-		System.out.println("MegaActionEnemy.execute state= " + state.name());
 		ArrayList<Sphere> strikers = DefensiveHelper.getStrikers(playingInfo.getSpheres(), roundInfo.myIndex, roundInfo);
 		if (strikers!=null && strikers.size()>0){
-			System.out.println("DEFENSE");
 			Sphere striker = strikers.get(0);
 			float myScore = DefensiveHelper.getScore(sumo, playingInfo);
 			float stikerScore = DefensiveHelper.getScore(striker, playingInfo);
 			Sphere[] nextSpheres = Collision.handleCollisionsNextRound(playingInfo.getSpheres(), roundInfo);
 			float myNextScore = DefensiveHelper.getScore(nextSpheres[roundInfo.myIndex], playingInfo);
 			float strikerNextScore = DefensiveHelper.getScore(nextSpheres[striker.index], playingInfo);
-			if (myNextScore > strikerNextScore || isNearTarget(striker, center,15) || Algebra.getEuclidDistance(striker.getVelocity())<3){
+			if (myNextScore >= strikerNextScore || isNearTarget(striker, new Point(0,0),15) || Algebra.getEuclidDistance(striker.getVelocity())<5){
 				// ATTACK
-				System.out.println("REPLY ATTACK !!!! myScore : " + myNextScore + " hisScore : " + strikerNextScore);
-				return (new SeekAction(roundInfo,striker.getNextPosition() )).execute(sumo, playingInfo);			
+				 //myNextScore > myScore 
+				AccelerationVector ac = (new ShotAction(roundInfo,striker.getPosition())).execute(sumo, playingInfo);			
+				ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+				System.out.println("UNDER ATTACK sphere " + striker.index + " => REPLY BY ATTACKING !!!! myScore=" + myScore + " myNextScore=" + myNextScore + " hisNextScore=" + strikerNextScore + " ac=" + ac);
+				return ac;			
 			}
 			// FLEE	
-			System.out.println("FLEE FROM ATTACK.... :(");
-			return (new SeekAction(roundInfo,new Point(0,0) )).execute(sumo, playingInfo);			
+			AccelerationVector ac = (new SeekAction(roundInfo,new Point(0,0) )).execute(sumo, playingInfo);			
+			ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+			System.out.println("UNDER ATTACK => FLEE FROM ATTACK.... :( myScore : " + myNextScore + " hisScore : " + strikerNextScore + " ac=" + ac);
+			return ac;			
 			//return (new FleeAction(roundInfo,striker.getNextPosition() )).execute(sumo, playingInfo);			
 		}
 		else{
-			System.out.println("ATTACK");
 			if (AI.nextVelocity!=null && !DefensiveHelper.compare(AI.nextVelocity, sumo.getVelocity())){
 				System.out.println("HIT BY ENEMY => DO NOTHING");				
 			}
@@ -72,20 +75,28 @@ public class MegaAction extends Action {
 			if (state == State.GO_CENTER){
 				center = DefensiveHelper.getColdPoint(playingInfo.getSpheres(), roundInfo.myIndex, playingInfo, roundInfo);
 				goTargetCpt++;
-				if (isNearTarget(sumo, center,15) || goTargetCpt >= MAX_GO_TO_TARGET){
+				if (isNearTarget(sumo, center,Constants.DIST_FROM_TARGET) || goTargetCpt >= Constants.MAX_GO_TO_CENTER){
 					goTargetCpt = 0;
 					state = State.GO_TARGET;
 					return execute(sumo, playingInfo);
 				}
 				IDrawable targetD = new CirclePlainDrawable(Color.GREEN,new Point(GUIHelper.SHIFT +center.x, GUIHelper.SHIFT + center.y), 8, 1F);
-				GUIHelper.jc.addDrawable(targetD);				
-				return (new ArrivalAction(roundInfo, center)).execute(sumo, playingInfo);
+				GUIHelper.jc.addDrawable(targetD);
+				AccelerationVector ac = (new ArrivalAction(roundInfo, center)).execute(sumo, playingInfo);
+				ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+				System.out.println("GO TO COLD POINT " + center + " numberAttempt=" + goTargetCpt + " ac=" + ac);								
+				return ac;			
 			}else{
 				Sphere targetAsSphere = DefensiveHelper.getTarget(playingInfo.getSpheres(), roundInfo.myIndex, playingInfo, roundInfo);
 				if (targetAsSphere==null && isNearTarget(sumo, center,15))
 					targetAsSphere = DefensiveHelper.getTargetAnyway(playingInfo.getSpheres(), roundInfo.myIndex, playingInfo, roundInfo);
-				if (targetAsSphere != null){
+				if (targetAsSphere != null){{
 					target = targetAsSphere.getNextPosition();
+					Sphere nextPosition = AI.getNextPosition(roundInfo, targetAsSphere, new AccelerationVector(0,0), playingInfo);
+					if (!nextPosition.inArena){
+						target = targetAsSphere.getPosition();
+					}
+				}
 				}else{
 					target = null;
 				}
@@ -99,7 +110,7 @@ public class MegaAction extends Action {
 				//if (target!=null)
 					//isDangerousAttack = DefensiveHelper.isDangerousAttack(sumo, target, playingInfo, roundInfo);
 				
-				if (goTargetCpt >= MAX_GO_TO_TARGET || target==null || isDangerousAttack || isNearTarget(sumo, target,5)){
+				if (goTargetCpt >= Constants.MAX_GO_TO_TARGET || target==null || isDangerousAttack || isNearTarget(sumo, target,5)){
 					goTargetCpt = 0;
 					state = State.GO_CENTER;
 					String reason="";
@@ -107,18 +118,21 @@ public class MegaAction extends Action {
 						reason = "targetIsNull";
 					else if (isNearTarget(sumo, target,5))
 						reason = "isNearTarget";
-					else if (goTargetCpt >= MAX_GO_TO_TARGET)
+					else if (goTargetCpt >= Constants.MAX_GO_TO_TARGET)
 						reason = "maxGoToTarget";
 					else if (isDangerousAttack)
 						reason = "isDangerousAttack";
 					
-					System.out.println("GO BACK TO CENTER : REASON = " + reason + " " );
-					if (isNearTarget(sumo, center,15))
+					System.out.println("GO BACK TO COLD POINT : REASON = " + reason + " " );
+					if (isNearTarget(sumo, center,Constants.DIST_FROM_COLD_POINT))
 						return new AccelerationVector(0, 0);
 					else
 					return execute(sumo, playingInfo);
 				}		
-				return (new SeekAction(roundInfo, target)).execute(sumo, playingInfo);			
+				AccelerationVector ac = (new ShotAction(roundInfo, target)).execute(sumo, playingInfo);	
+				ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+				System.out.println("GO TO TARGET " + target + " numberAttempt=" + goTargetCpt  + " ac=" + ac);
+				return ac;			
 			}
 		}
 		

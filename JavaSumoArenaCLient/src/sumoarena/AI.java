@@ -12,6 +12,7 @@ import valueobjects.Point;
 import valueobjects.RoundStartInfo;
 import valueobjects.Sphere;
 import valueobjects.Vector;
+import ai.MaxBrakeAheadAction;
 import ai.MegaAction;
 import ai.SeekAction;
 import draw.GUIHelper;
@@ -44,7 +45,7 @@ public class AI {
 		Date now = new Date();
 		long startTime = now.getTime();
 		Sphere sphere = playingInfo.getSpheres()[roundInfo.myIndex];
-		System.out.println("current position= " + sphere.getPosition() + ", current velocitty= " + sphere.getVelocity());
+		System.out.println("current position= " + sphere.getPosition() + ", current velocity= " + sphere.getVelocity());
 		AccelerationVector ac =action.execute(sphere, playingInfo);
 		ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
 		
@@ -62,11 +63,23 @@ public class AI {
 			}
 			
 			if (dontBreak){
-				System.out.println("NEVER BRAKE !!! ATTACK TO DEATH !!!!");			
+				System.out.println("NEVER BRAKE !!! ATTACK TO DEATH !!!! ac=" + ac);			
 			}
 			else{
-				System.out.println("WARNING TOO MUCH INERTY, OUT OF ARENA  => MAX BRAKE!");
-				ac = (new SeekAction(roundInfo,new Point(0,0) )).execute(sphere, playingInfo);
+				ac = (new SeekAction(roundInfo, new Point(0, 0) )).execute(sphere, playingInfo);
+				ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+				System.out.println("WARNING TOO MUCH INERTY, OUT OF ARENA  => GO TO CENTER! ac=" + ac);
+				nextPosition = getNextPosition(roundInfo, sphere, ac, playingInfo);
+				if (!nextPosition.inArena){
+					ac = (new MaxBrakeAheadAction(roundInfo, sphere.getVelocity() )).execute(sphere, playingInfo);
+					ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
+					System.out.println("WARNING STILL TOO MUCH INERTY, OUT OF ARENA  => MAX BREAK! ac=" + ac);
+				}
+				nextPosition = getNextPosition(roundInfo, sphere, ac, playingInfo);
+				if (!nextPosition.inArena)
+					System.out.println("AAHHAAHAHHAH NOTHING I CAN DO ....  I AM OUT");
+				else
+					System.out.println("I SHOULD BE FINE NEXT TURN " + nextPosition);
 			}
 		}	
 		ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
@@ -91,7 +104,7 @@ public class AI {
 		next.vx = sphere.vx + ac.getdVx();
 		next.vy = sphere.vy + ac.getdVy();
 		next.inArena = Algebra.isInArena(next, playingInfo);
-		System.out.println("next :" + next.toString());
+//		System.out.println("next :" + next.toString());
 		return next;
 	}
 	
@@ -130,9 +143,9 @@ public class AI {
 			return false;
 		}
 		float maxDist = Algebra.getEuclidDistance(nextIntersection.x - sphere.x, nextIntersection.y - sphere.y);
-		System.out.println("isTooMuchInerty : inertyDist=" + inertyDist + ", maxDist=" + maxDist);
+		//System.out.println("isTooMuchInerty : inertyDist=" + inertyDist + ", maxDist=" + maxDist);
 		if (inertyDist > maxDist){
-			System.out.println("isTooMuchInerty > true");
+			//System.out.println("isTooMuchInerty > true");
 			return true;
 		}
 		return false;

@@ -167,12 +167,14 @@ public class Algebra {
 		return isOverEuclid(ac.getdVx(), ac.getdVy(), roundInfo.maxSpeedVariation);
 	}
 	
+	public static int SECURITY = 5;
+	
 	public static  boolean isInArena(Sphere sphere, PlayingInfo playingInfo) {
-		return !isOverEuclid(sphere.x, sphere.y, playingInfo.getArenaRadius());
+		return !isOverEuclid(sphere.x, sphere.y, playingInfo.getArenaRadius() - 5);
 	}
 	
 	public static  boolean isOverEuclid(int x, int y, int dist){
-		return (x*x+y*y>dist*dist);
+		return (x*x+y*y>=dist*dist);
 	}
 
 	public static float dot(Vector a , Vector b){
