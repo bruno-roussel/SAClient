@@ -48,11 +48,11 @@ public class MegaAction extends Action {
 		if (strikers!=null && strikers.size()>0){
 			Sphere striker = strikers.get(0);
 			float myScore = DefensiveHelper.getScore(sumo, playingInfo);
-			float stikerScore = DefensiveHelper.getScore(striker, playingInfo);
+			float strikerScore = DefensiveHelper.getScore(striker, playingInfo);
 			Sphere[] nextSpheres = Collision.handleCollisionsNextRound(playingInfo.getSpheres(), roundInfo);
 			float myNextScore = DefensiveHelper.getScore(nextSpheres[roundInfo.myIndex], playingInfo);
 			float strikerNextScore = DefensiveHelper.getScore(nextSpheres[striker.index], playingInfo);
-			if (myNextScore >= strikerNextScore || isNearTarget(striker, new Point(0,0),15) || Algebra.getEuclidDistance(striker.getVelocity())<5){
+			if (myScore >= strikerScore || isNearTarget(striker, new Point(0,0),15) || Algebra.getEuclidDistance(striker.getVelocity())<5){
 				// ATTACK
 				 //myNextScore > myScore 
 				AccelerationVector ac = (new ShotAction(roundInfo,striker.getPosition())).execute(sumo, playingInfo);			
@@ -61,7 +61,7 @@ public class MegaAction extends Action {
 				return ac;			
 			}
 			// FLEE	
-			AccelerationVector ac = (new SeekAction(roundInfo,new Point(0,0) )).execute(sumo, playingInfo);			
+			AccelerationVector ac = (new ShotAction(roundInfo,new Point(0,0) )).execute(sumo, playingInfo);			
 			ac = Algebra.makeSureMaxSpeedVariation(roundInfo, ac);
 			System.out.println("UNDER ATTACK => FLEE FROM ATTACK.... :( myScore : " + myNextScore + " hisScore : " + strikerNextScore + " ac=" + ac);
 			return ac;			
